@@ -5,7 +5,7 @@
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 
-<ScrollPane fitToHeight="true" fitToWidth="true" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1">
+<ScrollPane fitToHeight="true" fitToWidth="true" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.weatherapp.WeatherController">
    <content>
       <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="400.0" prefWidth="600.0">
          <center>
@@ -74,8 +74,13 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
               </rowConstraints>
                <children>
-                  <Label text="Label" />
-                  <TextField GridPane.columnIndex="1" />
+                  <Label fx:id="locationText" text="Location" />
+                  <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1">
+                     <children>
+                        <TextField fx:id="searchBar" />
+                        <Button fx:id="searchButton" alignment="CENTER_RIGHT" mnemonicParsing="false" onMouseClicked="#onCitySearch" text="Search" textAlignment="CENTER" />
+                     </children>
+                  </HBox>
                </children>
             </GridPane>
          </top>
