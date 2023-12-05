@@ -5,6 +5,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -30,12 +32,14 @@ public class WeatherController {
     @FXML
     private Label dewpointText;
     @FXML
+    private ImageView weatherImg;
+    @FXML
     private HBox dailyForecastContainer;
 
     @FXML
     protected void onCitySearch(MouseEvent event) throws IOException {
-        System.out.println("Hello");
         String city = searchBar.getText();
+
         if (!city.isEmpty()) {
             // City -> location information
             JsonNode geoResponse = geocodeLocation(city);
@@ -57,8 +61,10 @@ public class WeatherController {
             visibilityText.setText("Visibility " + currentForecastResponse.get("current").get("visibility").asText());
             pressureText.setText("Pressure " + currentForecastResponse.get("current").get("pressure_msl").asText());
             dewpointText.setText("Dew point " + currentForecastResponse.get("current").get("dew_point_2m").asText());
+            boolean day = currentForecastResponse.get("current").get("is_day").asBoolean();
+            int weatherCode = currentForecastResponse.get("current").get("weather_code").asInt();
+            weatherImg.setImage(getWeatherImage(day, weatherCode));
 
-            // TODO: daily forecast data visualization
             displayDailyForecast(dailyForecastResponse);
         }
     }
@@ -72,7 +78,8 @@ public class WeatherController {
         for (int i = 0; i < nDays; i++) {
             Label date = new Label(dateNode.get(i).asText());
             // TODO weatherCode -> image
-            String weatherCode = dailyForecastData.get("daily").get("weather_code").get(i).asText();
+            int weatherCode = dailyForecastData.get("daily").get("weather_code").get(i).asInt();
+//            weatherImg.setImage(getWeatherImage(true, weatherCode));
             Label maxTemp = new Label(dailyForecastData.get("daily").get("temperature_2m_max").get(i).asText()+" °C");
             Label minTemp = new Label(dailyForecastData.get("daily").get("temperature_2m_min").get(i).asText()+" °C");
             Label precip = new Label(dailyForecastData.get("daily").get("precipitation_probability_max").get(i).asText()+" %");
@@ -80,6 +87,63 @@ public class WeatherController {
             VBox dayContainer = new VBox(date, maxTemp, minTemp, precip);
             dailyForecastContainer.getChildren().add(dayContainer);
         }
+    }
+
+    private Image getWeatherImage(boolean day, int weatherCode) {
+        char d = day ? 'd' : 'n';
+        String wc = String.valueOf(weatherCode);
+        String imgPathPattern = "/com/weatherapp/media/weather_icons/%s.png";
+        String imgPath = null;
+
+        // clear->cloudy (night/day)
+        if (weatherCode >= 0 && weatherCode <= 2) {
+            imgPath = String.format(imgPathPattern, wc + d);
+        }
+        // fog
+        else if (weatherCode == 45 || weatherCode == 48) {
+            imgPath = String.format(imgPathPattern, "45");
+        }
+        // drizzle
+        else if (weatherCode == 51 || weatherCode == 53 || weatherCode == 55) {
+            imgPath = String.format(imgPathPattern, "51");
+        }
+        // freezing drizzle
+        else if (weatherCode == 56 || weatherCode == 57) {
+            imgPath = String.format(imgPathPattern, "56");
+        }
+        // rain light
+        else if (weatherCode == 61 || weatherCode == 80) {
+            imgPath = String.format(imgPathPattern, "61");
+        }
+        // rain moderate
+        else if (weatherCode == 63 || weatherCode == 81) {
+            imgPath = String.format(imgPathPattern, "63");
+        }
+        // rain heavy
+        else if (weatherCode == 65 || weatherCode == 82) {
+            imgPath = String.format(imgPathPattern, "65");
+        }
+        // snow light
+        else if (weatherCode == 71 || weatherCode == 85) {
+            imgPath = String.format(imgPathPattern, "71");
+        }
+        // snow heavy
+        else if (weatherCode == 75 || weatherCode == 86) {
+            imgPath = String.format(imgPathPattern, "75");
+        }
+        // hail
+        else if (weatherCode == 96 || weatherCode == 99) {
+            imgPath = String.format(imgPathPattern, "96");
+        }
+        // other
+        else {
+            imgPath = String.format(imgPathPattern, wc);
+        }
+        System.out.println(imgPath);
+        if (imgPath != null)
+            return new Image(Objects.requireNonNull(getClass().getResourceAsStream(imgPath)));
+        else
+            return null;
     }
 
     private JsonNode geocodeLocation(String city) throws IOException {
