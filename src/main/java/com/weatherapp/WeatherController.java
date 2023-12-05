@@ -12,6 +12,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 public class WeatherController {
@@ -76,17 +78,29 @@ public class WeatherController {
         int nDays = dateNode.size();
 
         for (int i = 0; i < nDays; i++) {
-            Label date = new Label(dateNode.get(i).asText());
-            // TODO weatherCode -> image
+            Label day = new Label(convertDateToDay(dateNode.get(i).asText()));
             int weatherCode = dailyForecastData.get("daily").get("weather_code").get(i).asInt();
-//            weatherImg.setImage(getWeatherImage(true, weatherCode));
+            ImageView weatherImg = new ImageView(getWeatherImage(true, weatherCode));
             Label maxTemp = new Label(dailyForecastData.get("daily").get("temperature_2m_max").get(i).asText()+" °C");
             Label minTemp = new Label(dailyForecastData.get("daily").get("temperature_2m_min").get(i).asText()+" °C");
             Label precip = new Label(dailyForecastData.get("daily").get("precipitation_probability_max").get(i).asText()+" %");
 
-            VBox dayContainer = new VBox(date, maxTemp, minTemp, precip);
+            VBox dayContainer = new VBox(day);
+            HBox dayContainerDisplay = new HBox();
+            VBox dayContainerInfo = new VBox(maxTemp, minTemp, precip);
+
+            dayContainerDisplay.getChildren().add(weatherImg);
+            dayContainerDisplay.getChildren().add(dayContainerInfo);
+
+            dayContainer.getChildren().add(dayContainerDisplay);
+
             dailyForecastContainer.getChildren().add(dayContainer);
         }
+    }
+
+    private String convertDateToDay(String date) {
+        LocalDate ldate = LocalDate.parse(date, DateTimeFormatter.ISO_LOCAL_DATE);
+        return ldate.format(DateTimeFormatter.ofPattern("E d"));
     }
 
     private Image getWeatherImage(boolean day, int weatherCode) {
@@ -139,7 +153,6 @@ public class WeatherController {
         else {
             imgPath = String.format(imgPathPattern, wc);
         }
-        System.out.println(imgPath);
         if (imgPath != null)
             return new Image(Objects.requireNonNull(getClass().getResourceAsStream(imgPath)));
         else
