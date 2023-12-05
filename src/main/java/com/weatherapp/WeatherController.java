@@ -6,6 +6,8 @@ import javafx.scene.control.TextField;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -27,6 +29,8 @@ public class WeatherController {
     private Label pressureText;
     @FXML
     private Label dewpointText;
+    @FXML
+    private HBox dailyForecastContainer;
 
     @FXML
     protected void onCitySearch(MouseEvent event) throws IOException {
@@ -47,14 +51,34 @@ public class WeatherController {
             JsonNode dailyForecastResponse = locationForecast(latitude, longitude, "daily");
 
             // Displaying data
-            tempText.setText(currentForecastResponse.get("current").get("temperature_2m").asText());
-            humidityText.setText(humidityText.getText() + currentForecastResponse.get("current").get("relative_humidity_2m").asText());
-            windText.setText(windText.getText() + currentForecastResponse.get("current").get("wind_speed_10m").asText() + ", " + currentForecastResponse.get("current").get("wind_direction_10m").asText());
-            visibilityText.setText(visibilityText.getText() + currentForecastResponse.get("current").get("visibility").asText());
-            pressureText.setText(pressureText.getText() + currentForecastResponse.get("current").get("pressure_msl").asText());
-            dewpointText.setText(dewpointText.getText() + currentForecastResponse.get("current").get("dew_point_2m").asText());
+            tempText.setText(currentForecastResponse.get("current").get("temperature_2m").asText()+" °C");
+            humidityText.setText("Humidity " + currentForecastResponse.get("current").get("relative_humidity_2m").asText());
+            windText.setText("Wind " + currentForecastResponse.get("current").get("wind_speed_10m").asText() + ", " + currentForecastResponse.get("current").get("wind_direction_10m").asText());
+            visibilityText.setText("Visibility " + currentForecastResponse.get("current").get("visibility").asText());
+            pressureText.setText("Pressure " + currentForecastResponse.get("current").get("pressure_msl").asText());
+            dewpointText.setText("Dew point " + currentForecastResponse.get("current").get("dew_point_2m").asText());
 
             // TODO: daily forecast data visualization
+            displayDailyForecast(dailyForecastResponse);
+        }
+    }
+
+    private void displayDailyForecast(JsonNode dailyForecastData) {
+        dailyForecastContainer.getChildren().clear();
+
+        JsonNode dateNode = dailyForecastData.get("daily").get("time");
+        int nDays = dateNode.size();
+
+        for (int i = 0; i < nDays; i++) {
+            Label date = new Label(dateNode.get(i).asText());
+            // TODO weatherCode -> image
+            String weatherCode = dailyForecastData.get("daily").get("weather_code").get(i).asText();
+            Label maxTemp = new Label(dailyForecastData.get("daily").get("temperature_2m_max").get(i).asText()+" °C");
+            Label minTemp = new Label(dailyForecastData.get("daily").get("temperature_2m_min").get(i).asText()+" °C");
+            Label precip = new Label(dailyForecastData.get("daily").get("precipitation_probability_max").get(i).asText()+" %");
+
+            VBox dayContainer = new VBox(date, maxTemp, minTemp, precip);
+            dailyForecastContainer.getChildren().add(dayContainer);
         }
     }
 
