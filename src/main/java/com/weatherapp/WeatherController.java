@@ -1,7 +1,9 @@
 package com.weatherapp;
 
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -37,6 +39,7 @@ public class WeatherController {
     private ImageView weatherImg;
     @FXML
     private HBox dailyForecastContainer;
+
 
     @FXML
     protected void onCitySearch(MouseEvent event) throws IOException {
@@ -79,20 +82,30 @@ public class WeatherController {
 
         for (int i = 0; i < nDays; i++) {
             Label day = new Label(convertDateToDay(dateNode.get(i).asText()));
+            day.getStyleClass().add("day-label");
+
             int weatherCode = dailyForecastData.get("daily").get("weather_code").get(i).asInt();
             ImageView weatherImg = new ImageView(getWeatherImage(true, weatherCode));
-            Label maxTemp = new Label(dailyForecastData.get("daily").get("temperature_2m_max").get(i).asText()+" °C");
-            Label minTemp = new Label(dailyForecastData.get("daily").get("temperature_2m_min").get(i).asText()+" °C");
-            Label precip = new Label(dailyForecastData.get("daily").get("precipitation_probability_max").get(i).asText()+" %");
+            weatherImg.setFitHeight(50);
+            weatherImg.setFitWidth(50);
+
+            Label maxTemp = new Label(dailyForecastData.get("daily").get("temperature_2m_max").get(i).asText() + " °C");
+            Label minTemp = new Label(dailyForecastData.get("daily").get("temperature_2m_min").get(i).asText() + " °C");
+            Label precip = new Label(dailyForecastData.get("daily").get("precipitation_probability_max").get(i).asText() + " %");
 
             VBox dayContainer = new VBox(day);
+            dayContainer.getStyleClass().add("day-container");
+            dayContainer.setMinWidth(130);
+
             HBox dayContainerDisplay = new HBox();
+            dayContainerDisplay.getStyleClass().add("day-container-display");
+
             VBox dayContainerInfo = new VBox(maxTemp, minTemp, precip);
+            dayContainerInfo.getStyleClass().add("day-container-info");
 
-            dayContainerDisplay.getChildren().add(weatherImg);
-            dayContainerDisplay.getChildren().add(dayContainerInfo);
-
+            dayContainerDisplay.getChildren().addAll(weatherImg, dayContainerInfo);
             dayContainer.getChildren().add(dayContainerDisplay);
+            dayContainer.getStyleClass().add("daily-forecast-container");
 
             dailyForecastContainer.getChildren().add(dayContainer);
         }
@@ -106,7 +119,7 @@ public class WeatherController {
     private Image getWeatherImage(boolean day, int weatherCode) {
         char d = day ? 'd' : 'n';
         String wc = String.valueOf(weatherCode);
-        String imgPathPattern = "/com/weatherapp/media/weather_icons/%s.png";
+        String imgPathPattern = "/com/weatherapp/design/weather_icons/%s.png";
         String imgPath = null;
 
         // clear->cloudy (night/day)
