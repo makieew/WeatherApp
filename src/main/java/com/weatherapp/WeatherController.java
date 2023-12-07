@@ -1,6 +1,9 @@
 package com.weatherapp;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import javafx.animation.Timeline;
+import javafx.animation.KeyFrame;
+import javafx.util.Duration;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -14,17 +17,22 @@ import javafx.scene.layout.VBox;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.*;
 
 public class WeatherController {
+    private final Timeline realTimeUpdateTimeline = new Timeline();
     LocalDate currentDate = LocalDate.now();
+    String city = null;
 
     @FXML
     private TextField searchBar;
     @FXML
     private Label locationText;
+    @FXML
+    private Label lastUpdatedLabel;
     @FXML
     private Label tempText;
     @FXML
@@ -52,12 +60,24 @@ public class WeatherController {
     @FXML
     private Label nNotSunnyDaysLabel;
 
-
     @FXML
-    protected void onCitySearch(MouseEvent event) throws IOException {
-        String city = searchBar.getText();
+    protected void initialize() {
+        // Initialize real-time updates
+        realTimeUpdateTimeline.setCycleCount(Timeline.INDEFINITE);
+        KeyFrame keyFrame = new KeyFrame(Duration.minutes(15), event -> {
+            try {
+                if (city != null)
+                    refreshData();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        realTimeUpdateTimeline.getKeyFrames().add(keyFrame);
+        realTimeUpdateTimeline.play();
+    }
 
-        if (!city.isEmpty()) {
+    private void refreshData() throws IOException {
+        if (city != null && !city.isEmpty()) {
             // City -> location information
             JsonNode geoResponse = geocodeLocation(city);
 
@@ -76,7 +96,11 @@ public class WeatherController {
             JsonNode historyForecastResponse = locationHistoryForecast(latitude, longitude, firstDayOfMonth.toString(), currentDate.toString());
 
             // Displaying data
-            tempText.setText(currentForecastResponse.get("current").get("temperature_2m").asText()+" °C");
+            LocalDateTime currentTime = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+            lastUpdatedLabel.setText("Last updated at " + currentTime.format(formatter));
+
+            tempText.setText(currentForecastResponse.get("current").get("temperature_2m").asText() + " °C");
             humidityText.setText("Humidity " + currentForecastResponse.get("current").get("relative_humidity_2m").asText() + "%");
             windText.setText("Wind " + currentForecastResponse.get("current").get("wind_speed_10m").asText() + ", " + currentForecastResponse.get("current").get("wind_direction_10m").asText());
 
@@ -93,7 +117,15 @@ public class WeatherController {
 
             displayDailyForecast(dailyForecastResponse);
             displayMonthWeatherHistory(historyForecastResponse);
+
+            System.out.println("Real-time data refreshed");
         }
+    }
+
+    @FXML
+    protected void onCitySearch(MouseEvent event) throws IOException {
+        city = searchBar.getText();
+        refreshData();
     }
 
     private JsonNode locationHistoryForecast(double latitude, double longitude, String start_date, String end_date) throws IOException {

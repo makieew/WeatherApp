@@ -55,7 +55,7 @@
                            <Font size="18.0" />
                         </font>
                      </Label>
-                              <Label fx:id="lastUpdatedText" text="Hour" textFill="WHITE">
+                              <Label fx:id="lastUpdatedLabel" text="Hour" textFill="WHITE">
                         <VBox.margin>
                            <Insets />
                         </VBox.margin>
