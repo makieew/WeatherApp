@@ -123,7 +123,7 @@
          </ScrollPane>
          <VBox prefHeight="200.0" prefWidth="100.0" spacing="5.0" style="-fx-background-color: rgba(255, 255, 255, 0.107); -fx-background-radius: 10;">
             <children>
-               <Label fx:id="monthText" text="Month so far" textFill="WHITE">
+               <Label fx:id="monthTextLabel" text="Month so far" textFill="WHITE">
                   <font>
                      <Font size="18.0" />
                   </font>
@@ -135,11 +135,11 @@
                   <children>
                      <VBox alignment="CENTER" minHeight="100.0" minWidth="200.0" prefHeight="200.0" prefWidth="100.0" spacing="10.0">
                         <children>
-                           <Label fx:id="avgTempMax" text="Average high --°C" textFill="WHITE">
+                           <Label fx:id="avgTempMaxLabel" text="Average high --°C" textFill="WHITE">
                               <font>
                                  <Font size="14.0" />
                               </font></Label>
-                           <Label fx:id="avgTempMin" text="Average low --°C" textFill="WHITE">
+                           <Label fx:id="avgTempMinLabel" text="Average low --°C" textFill="WHITE">
                               <font>
                                  <Font size="14.0" />
                               </font>
@@ -148,12 +148,12 @@
                      </VBox>
                      <VBox alignment="CENTER" minHeight="100.0" minWidth="200.0" prefHeight="200.0" prefWidth="100.0" spacing="10.0">
                         <children>
-                           <Label fx:id="nSunnyDays" text="Sunny days --" textFill="WHITE">
+                           <Label fx:id="nSunnyDaysLabel" text="Sunny days --" textFill="WHITE">
                               <font>
                                  <Font size="14.0" />
                               </font>
                            </Label>
-                           <Label fx:id="nNotSunnyDays" text="Rain/snow days --" textFill="WHITE">
+                           <Label fx:id="nNotSunnyDaysLabel" text="Rain/snow days --" textFill="WHITE">
                               <font>
                                  <Font size="14.0" />
                               </font>
@@ -163,7 +163,7 @@
                </HBox>
             </children>
             <VBox.margin>
-               <Insets left="20.0" right="20.0" top="10.0" />
+               <Insets bottom="20.0" left="20.0" right="20.0" top="10.0" />
             </VBox.margin>
             <padding>
                <Insets top="20.0" />

@@ -1,5 +1,6 @@
 package com.weatherapp;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -13,11 +14,13 @@ import javafx.scene.layout.VBox;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Objects;
+import java.time.format.TextStyle;
+import java.util.*;
 
 public class WeatherController {
+    LocalDate currentDate = LocalDate.now();
+
     @FXML
     private TextField searchBar;
     @FXML
@@ -38,6 +41,17 @@ public class WeatherController {
     private ImageView weatherImg;
     @FXML
     private HBox dailyForecastContainer;
+    @FXML
+    private Label monthTextLabel;
+    @FXML
+    private Label avgTempMaxLabel;
+    @FXML
+    private Label avgTempMinLabel;
+    @FXML
+    private Label nSunnyDaysLabel;
+    @FXML
+    private Label nNotSunnyDaysLabel;
+
 
     @FXML
     protected void onCitySearch(MouseEvent event) throws IOException {
@@ -58,7 +72,6 @@ public class WeatherController {
             JsonNode dailyForecastResponse = locationForecast(latitude, longitude, "daily");
 
             // Current month weather history
-            LocalDate currentDate = LocalDate.now();
             LocalDate firstDayOfMonth = currentDate.withDayOfMonth(1);
             JsonNode historyForecastResponse = locationHistoryForecast(latitude, longitude, firstDayOfMonth.toString(), currentDate.toString());
 
@@ -91,8 +104,56 @@ public class WeatherController {
     }
 
     private void displayMonthWeatherHistory(JsonNode historyForecastData) {
+        // Data preparation
+        String[] weatherCodes = arrayNodeToStringArray((ArrayNode) historyForecastData.get("daily").get("weather_code"));
+        String[] maxTemps = arrayNodeToStringArray((ArrayNode) historyForecastData.get("daily").get("temperature_2m_max"));
+        String[] minTemps = arrayNodeToStringArray((ArrayNode) historyForecastData.get("daily").get("temperature_2m_min"));
 
+        int nSunnyDays = countSunnyDays(weatherCodes);
+        double avgMax = getAverageValue(maxTemps);
+        double avgMin = getAverageValue(minTemps);
 
+        // Data display
+        monthTextLabel.setText(currentDate.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH) + " so far");
+
+        avgTempMaxLabel.setText("Average high " + avgMax + "°");
+        avgTempMinLabel.setText("Average low " + avgMin + "°");
+
+        nSunnyDaysLabel.setText("Average high " + nSunnyDays + "°");
+        nNotSunnyDaysLabel.setText("Average high " + (weatherCodes.length - nSunnyDays) + "°");
+    }
+
+    private double getAverageValue(String[] a) {
+        double sum = 0;
+        for (int i = 0; i < a.length - 1; i++) {
+            sum += Double.parseDouble(a[i]);
+        }
+        double avg = sum/a.length;
+        return Math.round(avg * 10.0) / 10.0;
+    }
+
+    private int countSunnyDays(String[] weatherCodes) {
+        int counter = 0;
+        for (int i = 0; i < weatherCodes.length - 1; i++) {
+            if (Objects.equals(weatherCodes[i], "0") || Objects.equals(weatherCodes[i], "1")) {
+                counter++;
+            }
+        }
+        return counter;
+    }
+
+    private String[] arrayNodeToStringArray(ArrayNode an) {
+        if (an == null || an.isEmpty()) {
+            return new String[0];
+        }
+        List<String> a = new ArrayList<>();
+        for (int i = 0; i < an.size(); i++) {
+            JsonNode node = an.get(i);
+            if (node != null && !node.isNull()) {
+                a.add(node.asText());
+            }
+        }
+        return a.toArray(new String[0]);
     }
 
     private void displayDailyForecast(JsonNode dailyForecastData) {
