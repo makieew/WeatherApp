@@ -8,12 +8,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
@@ -47,7 +47,7 @@ public class WeatherController {
             // City -> location information
             JsonNode geoResponse = geocodeLocation(city);
 
-            locationText.setText(city + ", " + geoResponse.get("results").get(0).get("country").asText());
+            locationText.setText(geoResponse.get("results").get(0).get("name").asText() + ", " + geoResponse.get("results").get(0).get("country").asText());
 
             // Extract coordinates from the geocoding response
             double latitude = geoResponse.get("results").get(0).get("latitude").asDouble();
@@ -56,6 +56,11 @@ public class WeatherController {
             // Current and daily forecast data
             JsonNode currentForecastResponse = locationForecast(latitude, longitude, "current");
             JsonNode dailyForecastResponse = locationForecast(latitude, longitude, "daily");
+
+            // Current month weather history
+            LocalDate currentDate = LocalDate.now();
+            LocalDate firstDayOfMonth = currentDate.withDayOfMonth(1);
+            JsonNode historyForecastResponse = locationHistoryForecast(latitude, longitude, firstDayOfMonth.toString(), currentDate.toString());
 
             // Displaying data
             tempText.setText(currentForecastResponse.get("current").get("temperature_2m").asText()+" °C");
@@ -74,7 +79,20 @@ public class WeatherController {
             weatherImg.setImage(getWeatherImage(day, weatherCode));
 
             displayDailyForecast(dailyForecastResponse);
+            displayMonthWeatherHistory(historyForecastResponse);
         }
+    }
+
+    private JsonNode locationHistoryForecast(double latitude, double longitude, String start_date, String end_date) throws IOException {
+        String forecastHistoryAPI = "https://archive-api.open-meteo.com/v1/archive";
+        APIConnector connector = new APIConnector(forecastHistoryAPI);
+        String options = "&daily=weather_code,temperature_2m_max,temperature_2m_min";
+        return connector.sendGetRequest("?latitude="+latitude+"&longitude="+longitude+"&start_date="+start_date+"&end_date="+end_date+options);
+    }
+
+    private void displayMonthWeatherHistory(JsonNode historyForecastData) {
+
+
     }
 
     private void displayDailyForecast(JsonNode dailyForecastData) {
@@ -199,9 +217,6 @@ public class WeatherController {
             options = "&current=temperature_2m,relative_humidity_2m,visibility,apparent_temperature,is_day,weather_code,pressure_msl,dew_point_2m,wind_speed_10m,wind_direction_10m";
         } else if (Objects.equals(param, "daily")) {
             options = "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max";
-        } else {
-            System.out.println("error");
-            return null;
         }
         return connector.sendGetRequest("?latitude="+latitude+"&longitude="+longitude+options);
     }

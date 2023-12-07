@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.*?>
-<?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
@@ -122,14 +121,54 @@
                <Insets left="20.0" right="20.0" top="10.0" />
             </VBox.margin>
          </ScrollPane>
-              <LineChart minHeight="100.0">
-                  <xAxis>
-                      <CategoryAxis side="BOTTOM" />
-                  </xAxis>
-                  <yAxis>
-                      <NumberAxis side="LEFT" />
-                  </yAxis>
-              </LineChart>
+         <VBox prefHeight="200.0" prefWidth="100.0" spacing="5.0" style="-fx-background-color: rgba(255, 255, 255, 0.107); -fx-background-radius: 10;">
+            <children>
+               <Label fx:id="monthText" text="Month so far" textFill="WHITE">
+                  <font>
+                     <Font size="18.0" />
+                  </font>
+                  <VBox.margin>
+                     <Insets left="50.0" />
+                  </VBox.margin>
+               </Label>
+               <HBox alignment="CENTER" prefHeight="100.0" prefWidth="699.0" spacing="60.0">
+                  <children>
+                     <VBox alignment="CENTER" minHeight="100.0" minWidth="200.0" prefHeight="200.0" prefWidth="100.0" spacing="10.0">
+                        <children>
+                           <Label fx:id="avgTempMax" text="Average high --°C" textFill="WHITE">
+                              <font>
+                                 <Font size="14.0" />
+                              </font></Label>
+                           <Label fx:id="avgTempMin" text="Average low --°C" textFill="WHITE">
+                              <font>
+                                 <Font size="14.0" />
+                              </font>
+                           </Label>
+                        </children>
+                     </VBox>
+                     <VBox alignment="CENTER" minHeight="100.0" minWidth="200.0" prefHeight="200.0" prefWidth="100.0" spacing="10.0">
+                        <children>
+                           <Label fx:id="nSunnyDays" text="Sunny days --" textFill="WHITE">
+                              <font>
+                                 <Font size="14.0" />
+                              </font>
+                           </Label>
+                           <Label fx:id="nNotSunnyDays" text="Rain/snow days --" textFill="WHITE">
+                              <font>
+                                 <Font size="14.0" />
+                              </font>
+                           </Label>
+                        </children></VBox>
+                  </children>
+               </HBox>
+            </children>
+            <VBox.margin>
+               <Insets left="20.0" right="20.0" top="10.0" />
+            </VBox.margin>
+            <padding>
+               <Insets top="20.0" />
+            </padding>
+         </VBox>
         </VBox>
     </content>
 </ScrollPane>
