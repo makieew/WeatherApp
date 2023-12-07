@@ -1,15 +1,14 @@
 package com.weatherapp;
 
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
@@ -40,7 +39,6 @@ public class WeatherController {
     @FXML
     private HBox dailyForecastContainer;
 
-
     @FXML
     protected void onCitySearch(MouseEvent event) throws IOException {
         String city = searchBar.getText();
@@ -61,11 +59,16 @@ public class WeatherController {
 
             // Displaying data
             tempText.setText(currentForecastResponse.get("current").get("temperature_2m").asText()+" °C");
-            humidityText.setText("Humidity " + currentForecastResponse.get("current").get("relative_humidity_2m").asText());
+            humidityText.setText("Humidity " + currentForecastResponse.get("current").get("relative_humidity_2m").asText() + "%");
             windText.setText("Wind " + currentForecastResponse.get("current").get("wind_speed_10m").asText() + ", " + currentForecastResponse.get("current").get("wind_direction_10m").asText());
-            visibilityText.setText("Visibility " + currentForecastResponse.get("current").get("visibility").asText());
-            pressureText.setText("Pressure " + currentForecastResponse.get("current").get("pressure_msl").asText());
-            dewpointText.setText("Dew point " + currentForecastResponse.get("current").get("dew_point_2m").asText());
+
+            // Converting visibility from  meters to km
+            float vis = (float) currentForecastResponse.get("current").get("visibility").asInt() / 1000;
+            visibilityText.setText("Visibility " + vis + " km");
+
+            pressureText.setText("Pressure " + currentForecastResponse.get("current").get("pressure_msl").asText() + " mb");
+            dewpointText.setText("Dew point " + currentForecastResponse.get("current").get("dew_point_2m").asText() + "°");
+
             boolean day = currentForecastResponse.get("current").get("is_day").asBoolean();
             int weatherCode = currentForecastResponse.get("current").get("weather_code").asInt();
             weatherImg.setImage(getWeatherImage(day, weatherCode));
@@ -76,6 +79,8 @@ public class WeatherController {
 
     private void displayDailyForecast(JsonNode dailyForecastData) {
         dailyForecastContainer.getChildren().clear();
+
+        Image droplet_img = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/com/weatherapp/design/weather_icons/droplet-icon.png")));
 
         JsonNode dateNode = dailyForecastData.get("daily").get("time");
         int nDays = dateNode.size();
@@ -93,6 +98,13 @@ public class WeatherController {
             Label minTemp = new Label(dailyForecastData.get("daily").get("temperature_2m_min").get(i).asText() + " °C");
             Label precip = new Label(dailyForecastData.get("daily").get("precipitation_probability_max").get(i).asText() + " %");
 
+            ImageView droplet = new ImageView(droplet_img);
+            droplet.setFitHeight(12);
+            droplet.setFitWidth(12);
+
+            HBox precip_container = new HBox(droplet, precip);
+            precip_container.getStyleClass().add("day-precip-container");
+
             VBox dayContainer = new VBox(day);
             dayContainer.getStyleClass().add("day-container");
             dayContainer.setMinWidth(130);
@@ -100,7 +112,7 @@ public class WeatherController {
             HBox dayContainerDisplay = new HBox();
             dayContainerDisplay.getStyleClass().add("day-container-display");
 
-            VBox dayContainerInfo = new VBox(maxTemp, minTemp, precip);
+            VBox dayContainerInfo = new VBox(maxTemp, minTemp, precip_container);
             dayContainerInfo.getStyleClass().add("day-container-info");
 
             dayContainerDisplay.getChildren().addAll(weatherImg, dayContainerInfo);
