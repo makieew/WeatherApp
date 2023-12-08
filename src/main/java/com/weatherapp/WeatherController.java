@@ -83,45 +83,47 @@ public class WeatherController {
             // City -> location information
             JsonNode geoResponse = geocodeLocation(city);
 
-            locationText.setText(geoResponse.get("results").get(0).get("name").asText() + ", " + geoResponse.get("results").get(0).get("country").asText());
+            if (geoResponse.has("results")) {
+                locationText.setText(geoResponse.get("results").get(0).get("name").asText() + ", " + geoResponse.get("results").get(0).get("country").asText());
 
-            // Extract coordinates from the geocoding response
-            double latitude = geoResponse.get("results").get(0).get("latitude").asDouble();
-            double longitude = geoResponse.get("results").get(0).get("longitude").asDouble();
+                // Extract coordinates from the geocoding response
+                double latitude = geoResponse.get("results").get(0).get("latitude").asDouble();
+                double longitude = geoResponse.get("results").get(0).get("longitude").asDouble();
 
-            // Current and daily forecast data
-            JsonNode currentForecastResponse = locationForecast(latitude, longitude, "current");
-            JsonNode dailyForecastResponse = locationForecast(latitude, longitude, "daily");
+                // Current and daily forecast data
+                JsonNode currentForecastResponse = locationForecast(latitude, longitude, "current");
+                JsonNode dailyForecastResponse = locationForecast(latitude, longitude, "daily");
 
-            // Current month weather history
-            LocalDate firstDayOfMonth = currentDate.withDayOfMonth(1);
-            JsonNode historyForecastResponse = locationHistoryForecast(latitude, longitude, firstDayOfMonth.toString(), currentDate.minusDays(1).toString());
+                // Current month weather history
+                LocalDate firstDayOfMonth = currentDate.withDayOfMonth(1);
+                JsonNode historyForecastResponse = locationHistoryForecast(latitude, longitude, firstDayOfMonth.toString(), currentDate.minusDays(1).toString());
 
-            // Displaying data
-            LocalDateTime currentTime = LocalDateTime.now();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-            lastUpdatedLabel.setText("Last updated at " + currentTime.format(formatter));
+                // Displaying data
+                LocalDateTime currentTime = LocalDateTime.now();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+                lastUpdatedLabel.setText("Last updated at " + currentTime.format(formatter));
 
-            tempText.setText(currentForecastResponse.get("current").get("temperature_2m").asText() + " °C");
-            humidityText.setText("Humidity " + currentForecastResponse.get("current").get("relative_humidity_2m").asText() + "%");
-            windText.setText("Wind " + currentForecastResponse.get("current").get("wind_speed_10m").asText() + " km/h");
+                tempText.setText(currentForecastResponse.get("current").get("temperature_2m").asText() + " °C");
+                humidityText.setText("Humidity " + currentForecastResponse.get("current").get("relative_humidity_2m").asText() + "%");
+                windText.setText("Wind " + currentForecastResponse.get("current").get("wind_speed_10m").asText() + " km/h");
 
-            // Converting visibility from  meters to km
-            float vis = (float) currentForecastResponse.get("current").get("visibility").asInt() / 1000;
-            visibilityText.setText("Visibility " + vis + " km");
+                // Converting visibility from  meters to km
+                float vis = (float) currentForecastResponse.get("current").get("visibility").asInt() / 1000;
+                visibilityText.setText("Visibility " + vis + " km");
 
-            pressureText.setText("Pressure " + currentForecastResponse.get("current").get("pressure_msl").asText() + " mb");
-            dewpointText.setText("Dew point " + currentForecastResponse.get("current").get("dew_point_2m").asText() + "°");
+                pressureText.setText("Pressure " + currentForecastResponse.get("current").get("pressure_msl").asText() + " mb");
+                dewpointText.setText("Dew point " + currentForecastResponse.get("current").get("dew_point_2m").asText() + "°");
 
-            boolean day = currentForecastResponse.get("current").get("is_day").asBoolean();
-            int weatherCode = currentForecastResponse.get("current").get("weather_code").asInt();
-            weatherImg.setImage(getWeatherImage(day, weatherCode));
-            weatherTextLabel.setText(getWeatherDescription(weatherCode));
+                boolean day = currentForecastResponse.get("current").get("is_day").asBoolean();
+                int weatherCode = currentForecastResponse.get("current").get("weather_code").asInt();
+                weatherImg.setImage(getWeatherImage(day, weatherCode));
+                weatherTextLabel.setText(getWeatherDescription(weatherCode));
 
-            displayDailyForecast(dailyForecastResponse);
-            displayMonthWeatherHistory(historyForecastResponse);
+                displayDailyForecast(dailyForecastResponse);
+                displayMonthWeatherHistory(historyForecastResponse);
 
-            System.out.println("Real-time data refreshed");
+//                System.out.println("Real-time data refreshed");
+            }
         }
     }
 
