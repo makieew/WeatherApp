@@ -1,6 +1,6 @@
 # WeatherApp
 
-![WeatherApp Screenshot](/img/WeatherApp.png)
+![WeatherApp Screenshot](WeatherApp.png)
 
 ## Overview
 
