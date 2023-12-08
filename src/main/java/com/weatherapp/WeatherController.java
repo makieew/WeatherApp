@@ -36,6 +36,8 @@ public class WeatherController {
     @FXML
     private Label tempText;
     @FXML
+    private Label weatherTextLabel;
+    @FXML
     private Label humidityText;
     @FXML
     private Label windText;
@@ -93,7 +95,7 @@ public class WeatherController {
 
             // Current month weather history
             LocalDate firstDayOfMonth = currentDate.withDayOfMonth(1);
-            JsonNode historyForecastResponse = locationHistoryForecast(latitude, longitude, firstDayOfMonth.toString(), currentDate.toString());
+            JsonNode historyForecastResponse = locationHistoryForecast(latitude, longitude, firstDayOfMonth.toString(), currentDate.minusDays(1).toString());
 
             // Displaying data
             LocalDateTime currentTime = LocalDateTime.now();
@@ -102,7 +104,7 @@ public class WeatherController {
 
             tempText.setText(currentForecastResponse.get("current").get("temperature_2m").asText() + " °C");
             humidityText.setText("Humidity " + currentForecastResponse.get("current").get("relative_humidity_2m").asText() + "%");
-            windText.setText("Wind " + currentForecastResponse.get("current").get("wind_speed_10m").asText() + ", " + currentForecastResponse.get("current").get("wind_direction_10m").asText());
+            windText.setText("Wind " + currentForecastResponse.get("current").get("wind_speed_10m").asText() + " km/h");
 
             // Converting visibility from  meters to km
             float vis = (float) currentForecastResponse.get("current").get("visibility").asInt() / 1000;
@@ -114,6 +116,7 @@ public class WeatherController {
             boolean day = currentForecastResponse.get("current").get("is_day").asBoolean();
             int weatherCode = currentForecastResponse.get("current").get("weather_code").asInt();
             weatherImg.setImage(getWeatherImage(day, weatherCode));
+            weatherTextLabel.setText(getWeatherDescription(weatherCode));
 
             displayDailyForecast(dailyForecastResponse);
             displayMonthWeatherHistory(historyForecastResponse);
@@ -126,6 +129,68 @@ public class WeatherController {
     protected void onCitySearch(MouseEvent event) throws IOException {
         city = searchBar.getText();
         refreshData();
+    }
+
+    private String getWeatherDescription(int weatherCode) {
+        switch (weatherCode) {
+            case 0:
+                return "Clear sky";
+            case 1:
+                return "Mainly clear";
+            case 2:
+                return "Partly cloudy";
+            case 3:
+                return "Overcast";
+            case 45:
+                return "Fog";
+            case 48:
+                return "Depositing rime fog";
+            case 51:
+                return "Light drizzle";
+            case 53:
+                return "Moderate drizzle";
+            case 55:
+                return "Dense drizzle";
+            case 56:
+                return "Light freezing drizzle";
+            case 57:
+                return "Dense freezing drizzle";
+            case 61:
+                return "Slight rain";
+            case 63:
+                return "Moderate rain";
+            case 65:
+                return "Heavy rain";
+            case 66:
+                return "Light freezing rain";
+            case 67:
+                return "Heavy freezing rain";
+            case 71:
+                return "Slight snow fall";
+            case 73:
+                return "Moderate snow fall";
+            case 75:
+                return "Heavy snow fall";
+            case 77:
+                return "Snow grains";
+            case 80:
+                return "Slight rain showers";
+            case 81:
+                return "Moderate rain showers";
+            case 82:
+                return "Violent rain showers";
+            case 85:
+                return "Slight snow showers";
+            case 86:
+                return "Heavy snow showers";
+            case 95:
+                return "Thunderstorm";
+            case 96:
+                return "Thunderstorm with slight hail";
+            case 99:
+                return "Thunderstorm with heavy hail";
+        }
+        return "";
     }
 
     private JsonNode locationHistoryForecast(double latitude, double longitude, String start_date, String end_date) throws IOException {
@@ -307,7 +372,7 @@ public class WeatherController {
 
         String options = "";
         if (Objects.equals(param, "current")) {
-            options = "&current=temperature_2m,relative_humidity_2m,visibility,apparent_temperature,is_day,weather_code,pressure_msl,dew_point_2m,wind_speed_10m,wind_direction_10m";
+            options = "&current=temperature_2m,relative_humidity_2m,visibility,apparent_temperature,is_day,weather_code,pressure_msl,dew_point_2m,wind_speed_10m";
         } else if (Objects.equals(param, "daily")) {
             options = "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max";
         }

@@ -75,6 +75,11 @@
                               </font></Label>
                                   </children>
                               </HBox>
+                     <Label fx:id="weatherTextLabel" textFill="WHITE">
+                        <font>
+                           <Font size="18.0" />
+                        </font>
+                     </Label>
                           </children>
                   <GridPane.margin>
                      <Insets left="30.0" right="30.0" />
